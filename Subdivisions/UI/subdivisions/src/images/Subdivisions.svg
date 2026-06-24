@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <!-- A road-traced district boundary: a closed ring with control points at each corner. -->
+  <polygon points="6,11 16,4 26,12 21,27 10,25"
+           fill="#ffffff" fill-opacity="0.18"
+           stroke="#ffffff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <g fill="#ffffff">
+    <circle cx="6" cy="11" r="2.6"/>
+    <circle cx="16" cy="4" r="2.6"/>
+    <circle cx="26" cy="12" r="2.6"/>
+    <circle cx="21" cy="27" r="2.6"/>
+    <circle cx="10" cy="25" r="2.6"/>
+  </g>
+</svg>

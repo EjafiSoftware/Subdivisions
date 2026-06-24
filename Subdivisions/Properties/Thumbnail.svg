@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="950"
+   height="500"
+   viewBox="0 0 950 500"
+   version="1.1"
+   id="svg7"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <linearGradient
+       id="bg"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#1d3a57"
+         id="stop1" />
+      <stop
+         offset="1"
+         stop-color="#0b1622"
+         id="stop2" />
+    </linearGradient>
+  </defs>
+  <rect
+     width="950"
+     height="500"
+     fill="url(#bg)"
+     id="rect2" />
+  <!-- The Subdivisions icon (a road-traced district boundary with control points), scaled up. -->
+  <g
+     transform="matrix(8,0,0,8,347,63.5)"
+     fill="none"
+     id="g7">
+    <polygon
+       points="26,12 21,27 10,25 6,11 16,4 "
+       fill="#ffffff"
+       fill-opacity="0.16"
+       stroke="#ffffff"
+       stroke-width="2"
+       stroke-linejoin="round"
+       stroke-linecap="round"
+       id="polygon2" />
+    <g
+       fill="#ffffff"
+       id="g6">
+      <circle
+         cx="6"
+         cy="11"
+         r="2.6"
+         id="circle2" />
+      <circle
+         cx="16"
+         cy="4"
+         r="2.6"
+         id="circle3" />
+      <circle
+         cx="26"
+         cy="12"
+         r="2.6"
+         id="circle4" />
+      <circle
+         cx="21"
+         cy="27"
+         r="2.6"
+         id="circle5" />
+      <circle
+         cx="10"
+         cy="25"
+         r="2.6"
+         id="circle6" />
+    </g>
+  </g>
+  <text
+     x="475"
+     y="397"
+     text-anchor="middle"
+     font-family="Arial, sans-serif"
+     font-size="62px"
+     font-weight="700"
+     fill="#ffffff"
+     letter-spacing="2"
+     id="text7">Subdivisions</text>
+</svg>

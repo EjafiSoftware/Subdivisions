@@ -1,0 +1,59 @@
+<Publish>
+	<ModId Value="148238" />
+	<DisplayName Value="Subdivisions" />
+	<ShortDescription Value="Create districts that follow your networks." />
+	<LongDescription>
+Subdivisions creates districts whose boundaries follow your networks instead of being painted on freehand. Drop a few points around an area and the tool traces the boundary along the networks between them, so each district hugs your layout cleanly. It is handy for splitting a city into neighborhoods, planning zoning block by block, or laying out service areas that line up with your streets, rail, and paths.
+
+## How to use
+- Activate the tool from its button in the top-left of the screen.
+- Left-click to drop boundary points around a block or neighborhood.
+- Click the first point again to close the ring and create the district.
+- Right-click to remove the last point.
+
+A live preview and color-coded markers show the shape as you build it, so you can see exactly where each point will land.
+
+## Snapping
+Points snap to:
+- Networks of any kind - roads, rail, and pedestrian paths (intersections are preferred when you click near one)
+- Existing district boundaries
+- Map-tile borders
+
+## Tracing
+The boundary follows your networks along the shortest route between points, including elevated and tunnel sections. When two neighboring points are on different kinds of network, they are joined with a straight line instead. Utility lines such as power and water are ignored. Existing districts stay visible on the map while the tool is active.
+
+## Recommended Mods
+[Anarchy](https://mods.paradoxplaza.com/mods/74604/Windows) by yenyang is not required, but it is handy to have available while creating districts.
+
+This is an early release. Feedback and bug reports are very welcome.
+	</LongDescription>
+	<Thumbnail Value="Properties/Thumbnail.png" />
+	<Screenshot Value="Properties/screen1.jpg" />
+	<Tag Value="Code Mod" />
+	<ForumLink Value="" />
+	<ModVersion Value="0.2.4" />
+	<GameVersion Value="1.6.*" />
+	<ChangeLog>
+## Version 0.2.4
+- Update for patch 1.6.0f1
+
+## Version 0.2.3
+- Fixed boundaries crossing themselves when two points sat on different network types (such as a road and a rail line).
+- Fixed districts collapsing into a thin sliver when two points were on the same road loop; the boundary now wraps the block between them.
+- Faster boundary tracing across large road networks.
+
+## Version 0.2.2
+- Restored the live district preview while placing boundary points.
+- The tool no longer creates a district when the closed ring is invalid.
+
+## Version 0.2.1
+- Fixed the tool committing a district every frame while hovering; the district is now created only when the boundary ring is closed.
+- Removed unused settings that remained from a legacy version.
+
+## Version 0.2.0 - First Public Beta
+First public beta release.
+	</ChangeLog>
+
+	<!--Supported values Public, Private, Unlisted-->
+	<AccessLevel Value="Public" />
+</Publish>
