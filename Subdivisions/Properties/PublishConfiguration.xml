@@ -31,27 +31,37 @@ This is an early release. Feedback and bug reports are very welcome.
 	<Screenshot Value="Properties/screen1.jpg" />
 	<Tag Value="Code Mod" />
 	<ForumLink Value="" />
-	<ModVersion Value="0.2.4" />
+	<ModVersion Value="1.0.0" />
 	<GameVersion Value="1.6.*" />
+	<ExternalLink Type="github" Url="https://github.com/EjafiSoftware/Subdivisions" />
 	<ChangeLog>
+## Version 1.0.0
+
+* Initial release to Github (no code changes)
+
 ## Version 0.2.4
-- Update for patch 1.6.0f1
+
+* Update for patch 1.6.0f1
 
 ## Version 0.2.3
-- Fixed boundaries crossing themselves when two points sat on different network types (such as a road and a rail line).
-- Fixed districts collapsing into a thin sliver when two points were on the same road loop; the boundary now wraps the block between them.
-- Faster boundary tracing across large road networks.
+
+* Fixed boundaries crossing themselves when two points sat on different network types (such as a road and a rail line).
+* Fixed districts collapsing into a thin sliver when two points were on the same road loop; the boundary now wraps the block between them.
+* Faster boundary tracing across large road networks.
 
 ## Version 0.2.2
-- Restored the live district preview while placing boundary points.
-- The tool no longer creates a district when the closed ring is invalid.
+
+* Restored the live district preview while placing boundary points.
+* The tool no longer creates a district when the closed ring is invalid.
 
 ## Version 0.2.1
-- Fixed the tool committing a district every frame while hovering; the district is now created only when the boundary ring is closed.
-- Removed unused settings that remained from a legacy version.
 
-## Version 0.2.0 - First Public Beta
-First public beta release.
+* Fixed the tool committing a district every frame while hovering; the district is now created only when the boundary ring is closed.
+* Removed unused settings that remained from a legacy version.
+
+## Version 0.2.0
+
+* First public beta release.
 	</ChangeLog>
 
 	<!--Supported values Public, Private, Unlisted-->
