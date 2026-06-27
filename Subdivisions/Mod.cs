@@ -10,7 +10,7 @@ namespace Subdivisions
 {
     public class Mod : IMod
     {
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.1";
 
         private static readonly ILog Log = LogManager.GetLogger($"{nameof(Subdivisions)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
 

@@ -29,5 +29,16 @@ namespace Subdivisions.Systems.SubdivisionsToolJobs
             var cross = (p.x - a.x) * ab.y - (p.y - a.y) * ab.x;
             return math.abs(cross) / len;
         }
+
+        /// <summary>Closest point on segment a-b to <paramref name="p"/> (xz plane); <paramref name="distance"/> is the gap.</summary>
+        public static float3 ProjectOntoSegment(float3 a, float3 b, float2 p, out float distance)
+        {
+            var ab = b.xz - a.xz;
+            var lengthSq = math.lengthsq(ab);
+            var t = lengthSq > 1e-6f ? math.saturate(math.dot(p - a.xz, ab) / lengthSq) : 0f;
+            var position = math.lerp(a, b, t);
+            distance = math.distance(position.xz, p);
+            return position;
+        }
     }
 }

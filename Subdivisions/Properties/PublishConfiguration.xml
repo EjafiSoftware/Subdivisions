@@ -29,10 +29,15 @@ The boundary follows your networks along the shortest route between points, incl
 	<Screenshot Value="Properties/screen1.jpg" />
 	<Tag Value="Code Mod" />
 	<ForumLink Value="" />
-	<ModVersion Value="1.0.0" />
+	<ModVersion Value="1.0.1" />
 	<GameVersion Value="1.6.*" />
 	<ExternalLink Type="github" Url="https://github.com/EjafiSoftware/Subdivisions" />
 	<ChangeLog>
+## Version 1.0.1
+
+* Fixed valid network-following boundaries being flattened into straight lines.
+* Switched to A* for faster, more direct boundary tracing.
+
 ## Version 1.0.0
 
 * Initial release to Github (no code changes)

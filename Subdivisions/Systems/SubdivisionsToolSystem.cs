@@ -3,11 +3,8 @@ using Game.Net;
 using Game.Prefabs;
 using Game.Rendering;
 using Game.Tools;
-using Subdivisions.Systems.SubdivisionsToolJobs;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 
 namespace Subdivisions.Systems
 {
@@ -17,16 +14,14 @@ namespace Subdivisions.Systems
     /// it hugs the network instead of cutting straight across. Left-click adds a point (or closes the
     /// ring when clicked near the first point), right-click removes the last point.
     ///
-    /// The system itself only owns the tool lifecycle, input, and the control-point list; snapping,
-    /// preview rendering, and district building are delegated to dedicated collaborators.
+    /// The system owns only the tool lifecycle, raycast, and input; snapping, control-point storage,
+    /// preview/build caching, and district creation are delegated to dedicated collaborators.
     /// </summary>
     public partial class SubdivisionsToolSystem : ToolBaseSystem
     {
         private const string ToolId = "Subdivisions";
 
         private const float CloseRadius = 18f;
-
-        private const float HoverRebuildEpsilon = 0.5f;
 
         private DistrictPrefab _selectedPrefab;
 
@@ -36,14 +31,8 @@ namespace Subdivisions.Systems
         private PreviewRenderer _renderer;
         private DistrictBuilder _builder;
 
-        private NativeList<SnapPoint> _controlPoints;
-
-        private NativeList<float3> _ring;
-        private NativeReference<bool> _ringValid;
-        private SnapPoint _lastBuiltHover;
-        private bool _lastIncludeHover;
-        private bool _hasBuild;
-        private bool _pointsDirty;
+        private ControlPointRing _points;
+        private RingPreview _preview;
         private JobHandle _previewHandle;
 
         public override string toolID => ToolId;
@@ -52,6 +41,13 @@ namespace Subdivisions.Systems
         {
             base.OnCreate();
 
+            CreateCollaborators();
+            _points = new ControlPointRing();
+            _preview = new RingPreview(_builder);
+        }
+
+        private void CreateCollaborators()
+        {
             var barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             var prefabs = World.GetOrCreateSystemManaged<PrefabSystem>();
             var netSearch = World.GetOrCreateSystemManaged<SearchSystem>();
@@ -77,27 +73,13 @@ namespace Subdivisions.Systems
             _snapper = new CursorSnapper(_roads, _areas);
             _renderer = new PreviewRenderer(overlay);
             _builder = new DistrictBuilder(barrier, prefabs, _roads);
-
-            _controlPoints = new NativeList<SnapPoint>(Allocator.Persistent);
-            _ring = new NativeList<float3>(Allocator.Persistent);
-            _ringValid = new NativeReference<bool>(Allocator.Persistent);
         }
 
         protected override void OnDestroy()
         {
             _previewHandle.Complete();
-            if (_controlPoints.IsCreated)
-            {
-                _controlPoints.Dispose();
-            }
-            if (_ring.IsCreated)
-            {
-                _ring.Dispose();
-            }
-            if (_ringValid.IsCreated)
-            {
-                _ringValid.Dispose();
-            }
+            _points?.Dispose();
+            _preview?.Dispose();
             base.OnDestroy();
         }
 
@@ -107,8 +89,8 @@ namespace Subdivisions.Systems
             applyAction.shouldBeEnabled = true;
             secondaryApplyAction.shouldBeEnabled = true;
             requireAreas = Game.Areas.AreaTypeMask.Districts;
-            _controlPoints.Clear();
-            ResetBuildCache();
+            _points.Clear();
+            _preview.Reset();
         }
 
         protected override void OnStopRunning()
@@ -117,8 +99,8 @@ namespace Subdivisions.Systems
             secondaryApplyAction.shouldBeEnabled = false;
             requireAreas = Game.Areas.AreaTypeMask.None;
             _previewHandle.Complete();
-            _controlPoints.Clear();
-            ResetBuildCache();
+            _points.Clear();
+            _preview.Reset();
             base.OnStopRunning();
         }
 
@@ -153,117 +135,40 @@ namespace Subdivisions.Systems
             _areas.Refresh(this);
             var hover = _snapper.Snap(hit);
 
-            var canClose = _controlPoints.Length >= 3 && IsNearStart(hover._position);
-            _renderer.Draw(_controlPoints, hover, canClose);
+            var canClose = _points.CanClose(hover._position, CloseRadius);
+            _renderer.Draw(_points.Points, hover, canClose);
 
             applyMode = ApplyMode.Clear;
 
-            var tryClose = false;
-            if (secondaryApplyAction.WasPressedThisFrame())
+            var action = ToolInputReader.Read(applyAction, secondaryApplyAction, canClose);
+            if (action == ToolEditAction.RemoveLast)
             {
-                RemoveLastPoint();
-            }
-            else if (applyAction.WasPressedThisFrame())
-            {
-                if (canClose)
+                if (_points.RemoveLast())
                 {
-                    tryClose = true;
-                }
-                else
-                {
-                    _controlPoints.Add(hover);
-                    _pointsDirty = true;
+                    _preview.MarkPointsDirty();
                 }
             }
+            else if (action == ToolEditAction.AddPoint)
+            {
+                _points.Add(hover);
+                _preview.MarkPointsDirty();
+            }
 
-            var handle = UpdatePreview(hover, !canClose, inputDeps);
+            var handle = _preview.Update(_points, hover, !canClose, _selectedPrefab, inputDeps);
 
-            if (tryClose)
+            if (action == ToolEditAction.Close)
             {
                 handle.Complete();
-                if (GetAllowApply() && _ringValid.Value)
+                if (GetAllowApply() && _preview.IsValid)
                 {
                     applyMode = ApplyMode.Apply;
-                    _controlPoints.Clear();
-                    ResetBuildCache();
+                    _points.Clear();
+                    _preview.Reset();
                 }
             }
 
             _previewHandle = handle;
             return handle;
-        }
-
-        private JobHandle UpdatePreview(SnapPoint hover, bool includeHover, JobHandle inputDeps)
-        {
-            if (_controlPoints.Length + (includeHover ? 1 : 0) < 3)
-            {
-                _hasBuild = false;
-                return inputDeps;
-            }
-
-            var handle = inputDeps;
-            if (NeedsRebuild(hover, includeHover))
-            {
-                handle = ScheduleBuild(hover, includeHover, inputDeps);
-                _lastBuiltHover = hover;
-                _lastIncludeHover = includeHover;
-                _hasBuild = true;
-                _pointsDirty = false;
-            }
-
-            return _builder.CreateDistrict(_ring, _selectedPrefab, handle);
-        }
-
-        private JobHandle ScheduleBuild(SnapPoint hover, bool includeHover, JobHandle inputDeps)
-        {
-            var points = new NativeList<SnapPoint>(Allocator.TempJob);
-            foreach (var point in _controlPoints)
-            {
-                points.Add(point);
-            }
-            if (includeHover)
-            {
-                points.Add(hover);
-            }
-
-            var handle = _builder.BuildRing(points, _ring, _ringValid, inputDeps);
-            points.Dispose(handle);
-            return handle;
-        }
-
-        private bool NeedsRebuild(SnapPoint hover, bool includeHover)
-        {
-            if (!_hasBuild || _pointsDirty || includeHover != _lastIncludeHover)
-            {
-                return true;
-            }
-            if (!includeHover)
-            {
-                return false;
-            }
-            return hover._edge != _lastBuiltHover._edge
-                || math.distance(hover._position.xz, _lastBuiltHover._position.xz) > HoverRebuildEpsilon;
-        }
-
-        private void ResetBuildCache()
-        {
-            _hasBuild = false;
-            _pointsDirty = true;
-        }
-
-        private void RemoveLastPoint()
-        {
-            if (_controlPoints.Length > 0)
-            {
-                _controlPoints.RemoveAt(_controlPoints.Length - 1);
-                _pointsDirty = true;
-            }
-        }
-
-        private bool IsNearStart(float3 position)
-        {
-            return _controlPoints.Length > 0
-                && math.distance(position.xz, _controlPoints[0]._position.xz) < CloseRadius;
         }
     }
 }
