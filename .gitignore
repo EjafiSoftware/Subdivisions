@@ -9,3 +9,4 @@ Library/
 node_modules/
 dist/
 *.d.ts
+**/*.user
