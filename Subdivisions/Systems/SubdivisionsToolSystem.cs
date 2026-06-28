@@ -15,7 +15,8 @@ namespace Subdivisions.Systems
     /// ring when clicked near the first point), right-click removes the last point.
     ///
     /// The system owns only the tool lifecycle, raycast, and input; snapping, control-point storage,
-    /// preview/build caching, and district creation are delegated to dedicated collaborators.
+    /// preview/build caching, and district creation are delegated to dedicated collaborators. The
+    /// border trace runs synchronously on the main thread through <see cref="EcsBoundaryGraph"/>.
     /// </summary>
     public partial class SubdivisionsToolSystem : ToolBaseSystem
     {
@@ -29,11 +30,12 @@ namespace Subdivisions.Systems
         private AreaIndex _areas;
         private CursorSnapper _snapper;
         private PreviewRenderer _renderer;
-        private DistrictBuilder _builder;
+        private EcsBoundaryGraph _graph;
+        private ToolOutputBarrier _barrier;
+        private PrefabSystem _prefabs;
 
         private ControlPointRing _points;
         private RingPreview _preview;
-        private JobHandle _previewHandle;
 
         public override string toolID => ToolId;
 
@@ -43,13 +45,13 @@ namespace Subdivisions.Systems
 
             CreateCollaborators();
             _points = new ControlPointRing();
-            _preview = new RingPreview(_builder);
+            _preview = new RingPreview();
         }
 
         private void CreateCollaborators()
         {
-            var barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
-            var prefabs = World.GetOrCreateSystemManaged<PrefabSystem>();
+            _barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
+            _prefabs = World.GetOrCreateSystemManaged<PrefabSystem>();
             var netSearch = World.GetOrCreateSystemManaged<SearchSystem>();
             var areaSearch = World.GetOrCreateSystemManaged<Game.Areas.SearchSystem>();
             var overlay = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
@@ -72,14 +74,12 @@ namespace Subdivisions.Systems
                 GetComponentLookup<Deleted>(true));
             _snapper = new CursorSnapper(_roads, _areas);
             _renderer = new PreviewRenderer(overlay);
-            _builder = new DistrictBuilder(barrier, prefabs, _roads);
+            _graph = new EcsBoundaryGraph(_roads);
         }
 
         protected override void OnDestroy()
         {
-            _previewHandle.Complete();
             _points?.Dispose();
-            _preview?.Dispose();
             base.OnDestroy();
         }
 
@@ -98,7 +98,6 @@ namespace Subdivisions.Systems
             applyAction.shouldBeEnabled = false;
             secondaryApplyAction.shouldBeEnabled = false;
             requireAreas = Game.Areas.AreaTypeMask.None;
-            _previewHandle.Complete();
             _points.Clear();
             _preview.Reset();
             base.OnStopRunning();
@@ -133,6 +132,7 @@ namespace Subdivisions.Systems
             var hit = raycastPoint.m_HitPosition;
             _roads.Refresh(this);
             _areas.Refresh(this);
+            _graph.Refresh();
             var hover = _snapper.Snap(hit);
 
             var canClose = _points.CanClose(hover._position, CloseRadius);
@@ -154,21 +154,17 @@ namespace Subdivisions.Systems
                 _preview.MarkPointsDirty();
             }
 
-            var handle = _preview.Update(_points, hover, !canClose, _selectedPrefab, inputDeps);
+            var ecb = _barrier.CreateCommandBuffer();
+            _preview.Update(_points, hover, !canClose, _graph, ecb, _prefabs.GetEntity(_selectedPrefab));
 
-            if (action == ToolEditAction.Close)
+            if (action == ToolEditAction.Close && GetAllowApply() && _preview.IsValid)
             {
-                handle.Complete();
-                if (GetAllowApply() && _preview.IsValid)
-                {
-                    applyMode = ApplyMode.Apply;
-                    _points.Clear();
-                    _preview.Reset();
-                }
+                applyMode = ApplyMode.Apply;
+                _points.Clear();
+                _preview.Reset();
             }
 
-            _previewHandle = handle;
-            return handle;
+            return inputDeps;
         }
     }
 }

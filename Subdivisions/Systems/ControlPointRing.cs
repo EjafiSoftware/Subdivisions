@@ -1,5 +1,5 @@
 using System;
-using Subdivisions.Systems.SubdivisionsToolJobs;
+using Subdivisions.Core;
 using Unity.Collections;
 using Unity.Mathematics;
 

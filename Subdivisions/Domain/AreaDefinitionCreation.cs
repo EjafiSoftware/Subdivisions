@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using Game.Areas;
 using Game.Common;
 using Game.Tools;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -15,15 +15,15 @@ namespace Subdivisions.Domain
     public static class AreaDefinitionCreation
     {
         /// <summary>Writes the polygon as a closed ring of area nodes (last node == first).</summary>
-        public static void AsDynamicBufferNodes(EntityCommandBuffer ecb, Entity entity, NativeList<float3> points)
+        public static void AsDynamicBufferNodes(EntityCommandBuffer ecb, Entity entity, IReadOnlyList<float3> points)
         {
             var nodeBuffer = ecb.AddBuffer<Node>(entity);
-            nodeBuffer.ResizeUninitialized(points.Length + 1);
-            for (var i = 0; i < points.Length; i++)
+            nodeBuffer.ResizeUninitialized(points.Count + 1);
+            for (var i = 0; i < points.Count; i++)
             {
                 nodeBuffer[i] = new Node(points[i], float.MinValue);
             }
-            nodeBuffer[points.Length] = nodeBuffer[0];
+            nodeBuffer[points.Count] = nodeBuffer[0];
         }
 
         /// <summary>Tags the entity as a creation definition for the given prefab entity.</summary>

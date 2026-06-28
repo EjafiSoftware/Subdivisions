@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Configurations>Debug;Release</Configurations>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!--
+    Resolve the game's Managed folder without importing the modding toolchain
+    (Mod.props/Mod.targets), so Core stays a plain library that deploys nothing.
+  -->
+  <PropertyGroup>
+    <CSIIManagedPath>$([System.Environment]::GetEnvironmentVariable('CSII_MANAGEDPATH', 'EnvironmentVariableTarget.User'))</CSIIManagedPath>
+    <SteamManagedPath>C:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed</SteamManagedPath>
+    <XboxManagedPath>C:\XboxGames\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed</XboxManagedPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ManagedPath)' == '' AND Exists('$(CSIIManagedPath)\Game.dll')">
+    <ManagedPath>$(CSIIManagedPath)</ManagedPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ManagedPath)' == '' AND Exists('$(SteamManagedPath)\Game.dll')">
+    <ManagedPath>$(SteamManagedPath)</ManagedPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ManagedPath)' == '' AND Exists('$(XboxManagedPath)\Game.dll')">
+    <ManagedPath>$(XboxManagedPath)</ManagedPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Subdivisions.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>$(ManagedPath)\Unity.Mathematics.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Colossal.Mathematics">
+      <HintPath>$(ManagedPath)\Colossal.Mathematics.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.Entities">
+      <HintPath>$(ManagedPath)\Unity.Entities.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

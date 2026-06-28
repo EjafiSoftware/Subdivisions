@@ -1,4 +1,4 @@
-using Subdivisions.Systems.SubdivisionsToolJobs;
+using Subdivisions.Core;
 using Unity.Entities;
 using Unity.Mathematics;
 

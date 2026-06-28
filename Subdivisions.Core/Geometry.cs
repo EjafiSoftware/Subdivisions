@@ -1,8 +1,8 @@
 using Unity.Mathematics;
 
-namespace Subdivisions.Systems.SubdivisionsToolJobs
+namespace Subdivisions.Core
 {
-    internal static class Geometry
+    public static class Geometry
     {
         public static float Cross(float2 a, float2 b)
         {

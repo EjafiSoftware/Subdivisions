@@ -1,6 +1,7 @@
 using Game.Common;
 using Game.Net;
 using Game.Prefabs;
+using Subdivisions.Core;
 using Unity.Collections;
 using Unity.Entities;
 
@@ -73,14 +74,5 @@ namespace Subdivisions.Systems.SubdivisionsToolJobs
             }
             return NetworkKind.None;
         }
-    }
-
-    internal enum NetworkKind
-    {
-        None,
-        Road,
-        Track,
-        Pedestrian,
-        Surface,
     }
 }

@@ -1,6 +1,6 @@
 using Colossal.Mathematics;
 using Game.Rendering;
-using Subdivisions.Systems.SubdivisionsToolJobs;
+using Subdivisions.Core;
 using Unity.Collections;
 using UnityEngine;
 
