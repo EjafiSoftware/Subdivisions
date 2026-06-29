@@ -26,7 +26,7 @@ namespace Subdivisions.Core
             var tm = (t0 + t1) * 0.5f;
             var pm = MathUtils.Position(bez, tm).xz;
 
-            if (depth >= MaxDepth || Geometry.MeasurePerpendicularDistance(pm, p0, p1) < DeviationTol)
+            if (depth >= MaxDepth || MathUtils.Distance(new Line2(p0, p1), pm, out _) < DeviationTol)
             {
                 ring.Add(p1);
                 return;

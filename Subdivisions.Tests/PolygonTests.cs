@@ -41,6 +41,13 @@ namespace Subdivisions.Tests
         }
 
         [Test]
+        public void IsSimple_VertexTouchingNonAdjacentEdge_ReturnsFalse()
+        {
+            // (5,0) is a vertex lying exactly on the (0,0)-(10,0) edge: a degenerate self-touch.
+            Polygon.IsSimple(Ring((0, 0), (10, 0), (10, 10), (5, 0), (0, 10))).Should().BeFalse();
+        }
+
+        [Test]
         public void CollapseSpikes_RemovesConsecutiveDuplicateVertices()
         {
             var ring = Ring((0, 0), (0, 0), (10, 0), (10, 10), (0, 10));

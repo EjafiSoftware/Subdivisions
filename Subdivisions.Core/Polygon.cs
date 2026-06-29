@@ -31,7 +31,7 @@ namespace Subdivisions.Core
                     {
                         continue;
                     }
-                    if (Geometry.SegmentsCross(a1, a2, ring[j], ring[(j + 1) % n]))
+                    if (MathUtils.Intersect(new Line2.Segment(a1, a2), new Line2.Segment(ring[j], ring[(j + 1) % n]), out _))
                     {
                         return false;
                     }
@@ -89,7 +89,7 @@ namespace Subdivisions.Core
                 var prev = ring[(i - 1 + ring.Count) % ring.Count];
                 var cur = ring[i];
                 var next = ring[(i + 1) % ring.Count];
-                if (Geometry.MeasurePerpendicularDistance(cur, prev, next) < tolerance)
+                if (MathUtils.Distance(new Line2(prev, next), cur, out _) < tolerance)
                 {
                     ring.RemoveAt(i);
                 }

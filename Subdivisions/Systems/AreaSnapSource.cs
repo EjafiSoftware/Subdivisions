@@ -1,3 +1,4 @@
+using Colossal.Mathematics;
 using Subdivisions.Core;
 using Unity.Collections;
 using Unity.Entities;
@@ -56,7 +57,8 @@ namespace Subdivisions.Systems
                 {
                     var a = ring[n].m_Position;
                     var b = ring[(n + 1) % ring.Length].m_Position;
-                    var position = Geometry.ProjectOntoSegment(a, b, hit.xz, out var distance);
+                    var distance = MathUtils.Distance(new Line2.Segment(a.xz, b.xz), hit.xz, out var t);
+                    var position = math.lerp(a, b, t);
                     accumulator.Consider(
                         new SnapPoint { _position = position, _edge = Entity.Null, _t = 0f, _onArea = true },
                         distance);

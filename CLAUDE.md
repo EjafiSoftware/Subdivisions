@@ -74,7 +74,12 @@ the two ECS systems into the game's update loop:
 - `SubdivisionsToolSystem` at `SystemUpdatePhase.ToolUpdate`
 - `SubdivisionsUISystem` at `SystemUpdatePhase.UIUpdate`
 
-Bump `Mod.Version` when releasing; `Properties/PublishConfiguration.xml` holds PDX Mods metadata.
+When releasing, bump the version in all four places (kept in sync by hand — an earlier attempt to
+derive them from one source via MSBuild was rejected as too fragile):
+- `Mod.cs` `Version` const (logged on load + shown in the options screen)
+- `Subdivisions.csproj` `<Version>` (assembly/file version)
+- `Properties/PublishConfiguration.xml` `ModVersion` (PDX Mods publish metadata; changelog lives here)
+- `UI/subdivisions/mod.json` `version` (UI manifest)
 
 ### The tool system (`Systems/SubdivisionsToolSystem.cs`)
 
@@ -137,9 +142,13 @@ core never sees `Game` types or ECS lookups, which is what makes it testable out
   ≥3 verts and simple. An instance owns pooled buffers and reuses them across rebuilds; `Ring` is a
   view valid only until the next `Trace`. `Execute`/`TryBuildRing`/`Segment` + polygon cleanup is
   orchestration; the heavy lifting is `BoundaryPathFinder` (A* over the boundary subgraph via a
-  managed `MinHeap`), `CurveTessellator` (adaptive bezier→ring flattening), and `Polygon`/`Geometry`
-  (cleanup, segment intersection, perpendicular distance). All managed (`List`/`Dictionary`/
-  `HashSet`), so the suite runs in a plain `dotnet test` process.
+  managed `MinHeap`), `CurveTessellator` (adaptive bezier→ring flattening), and `Polygon`
+  (ring cleanup). Segment intersection, point-line distance, and closest-point-on-segment come
+  from the game's `Colossal.Mathematics.MathUtils` (`Intersect`/`Distance` over `Line2`/
+  `Line2.Segment`) rather than a hand-rolled helper — note `MathUtils.Intersect` treats a
+  touching/collinear contact as an intersection, so `Polygon.IsSimple` rejects degenerate
+  self-touching rings (stricter than a strict proper-crossing test). All managed
+  (`List`/`Dictionary`/`HashSet`), so the suite runs in a plain `dotnet test` process.
 
 Two non-obvious tracing rules in `BorderTracer.Segment` (both are deliberate UX fixes — don't
 regress them; each has an explicit test):
