@@ -3,7 +3,7 @@ using Colossal.Mathematics;
 using Subdivisions.Core;
 using Unity.Entities;
 
-namespace Subdivisions.Tests
+namespace Subdivisions.Tests.Fakes
 {
     /// <summary>
     /// In-memory <see cref="IBoundaryGraph"/> adapter for tests. The second adapter that makes

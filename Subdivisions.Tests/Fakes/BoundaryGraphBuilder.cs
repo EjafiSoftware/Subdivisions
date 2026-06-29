@@ -4,7 +4,7 @@ using Subdivisions.Core;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Subdivisions.Tests
+namespace Subdivisions.Tests.Fakes
 {
     /// <summary>
     /// Fluent construction of an <see cref="ArrayBoundaryGraph"/> from node positions and edges
@@ -67,25 +67,6 @@ namespace Subdivisions.Tests
         private static Bezier4x3 StraightBezier(float3 p0, float3 p3)
         {
             return new Bezier4x3(p0, math.lerp(p0, p3, 1f / 3f), math.lerp(p0, p3, 2f / 3f), p3);
-        }
-    }
-
-    /// <summary>Snapped and free control points for tests.</summary>
-    internal static class Pt
-    {
-        public static SnapPoint Free(float x, float z)
-        {
-            return new SnapPoint { Position = new float3(x, 0f, z), Edge = Entity.Null, CurveParameter = 0f };
-        }
-
-        public static SnapPoint Net(float x, float z, int edge = 1, float t = 0f)
-        {
-            return new SnapPoint { Position = new float3(x, 0f, z), Edge = new Entity { Index = edge, Version = 1 }, CurveParameter = t };
-        }
-
-        public static SnapPoint Area(float x, float z)
-        {
-            return new SnapPoint { Position = new float3(x, 0f, z), Edge = Entity.Null, CurveParameter = 0f, OnArea = true };
         }
     }
 }

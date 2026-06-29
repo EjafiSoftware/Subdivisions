@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using AwesomeAssertions;
 using NUnit.Framework;
 using Subdivisions.Core;
+using Subdivisions.Tests.Fakes;
 using Unity.Entities;
 
 namespace Subdivisions.Tests
