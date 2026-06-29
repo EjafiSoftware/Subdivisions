@@ -25,7 +25,7 @@ the domain.
   forced onto the other arc so two points on one loop enclose the block between them rather
   than collapsing to a sliver.
 
-## The tracing core seam (PRD: pure tracing core)
+## The tracing core seam
 
 - **`IBoundaryGraph`** - the seam the tracer consumes: endpoints, curve, neighbors, and the
   `IsBoundary`/`GetKind` classification of an edge. Classification lives behind it.
