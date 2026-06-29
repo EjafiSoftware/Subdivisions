@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Colossal.Mathematics;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -42,7 +41,7 @@ namespace Subdivisions.Core
 
             if (_ring.Count >= 3 && Polygon.IsSimple(_ring))
             {
-                var height = points[0]._position.y;
+                var height = points[0].Position.y;
                 for (var i = 0; i < _ring.Count; i++)
                 {
                     _result.Add(new float3(_ring[i].x, height, _ring[i].y));
@@ -57,7 +56,7 @@ namespace Subdivisions.Core
             var n = points.Count;
             _usedEdges.Clear();
 
-            _ring.Add(points[0]._position.xz);
+            _ring.Add(points[0].Position.xz);
             for (var i = 0; i < n; i++)
             {
                 Segment(points[i], points[(i + 1) % n], graph);
@@ -76,16 +75,16 @@ namespace Subdivisions.Core
 
         private void Segment(SnapPoint a, SnapPoint b, IBoundaryGraph graph)
         {
-            if (!a.OnNet || !b.OnNet || graph.GetKind(a._edge) != graph.GetKind(b._edge))
+            if (!a.OnNet || !b.OnNet || graph.GetKind(a.Edge) != graph.GetKind(b.Edge))
             {
-                _ring.Add(b._position.xz);
+                _ring.Add(b.Position.xz);
                 return;
             }
 
-            var ca = graph.GetCurve(a._edge);
-            if (a._edge == b._edge)
+            var ca = graph.GetCurve(a.Edge);
+            if (a.Edge == b.Edge)
             {
-                CurveTessellator.EmitRange(ca, a._t, b._t, _ring);
+                CurveTessellator.EmitRange(ca, a.CurveParameter, b.CurveParameter, _ring);
                 return;
             }
 
@@ -93,17 +92,17 @@ namespace Subdivisions.Core
             _edgePath.Clear();
             if (!_finder.FindPath(graph, a, b, _usedEdges, _nodePath, _edgePath))
             {
-                _ring.Add(b._position.xz);
+                _ring.Add(b.Position.xz);
                 return;
             }
 
-            var ea = graph.GetEndpoints(a._edge);
-            var eb = graph.GetEndpoints(b._edge);
-            var cb = graph.GetCurve(b._edge);
+            var ea = graph.GetEndpoints(a.Edge);
+            var eb = graph.GetEndpoints(b.Edge);
+            var cb = graph.GetCurve(b.Edge);
             var src = _nodePath[0];
             var tgt = _nodePath[_nodePath.Count - 1];
 
-            CurveTessellator.EmitRange(ca, a._t, src == ea.Start ? 0f : 1f, _ring);
+            CurveTessellator.EmitRange(ca, a.CurveParameter, src == ea.Start ? 0f : 1f, _ring);
 
             for (var k = 0; k < _edgePath.Count; k++)
             {
@@ -118,7 +117,7 @@ namespace Subdivisions.Core
                 _usedEdges.Add(e);
             }
 
-            CurveTessellator.EmitRange(cb, tgt == eb.Start ? 0f : 1f, b._t, _ring);
+            CurveTessellator.EmitRange(cb, tgt == eb.Start ? 0f : 1f, b.CurveParameter, _ring);
         }
     }
 }

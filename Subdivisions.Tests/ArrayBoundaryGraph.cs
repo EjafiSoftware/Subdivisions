@@ -48,9 +48,9 @@ namespace Subdivisions.Tests
         {
             return new SnapPoint
             {
-                _position = MathUtils.Position(_curves[edge], t),
-                _edge = edge,
-                _t = t,
+                Position = MathUtils.Position(_curves[edge], t),
+                Edge = edge,
+                CurveParameter = t,
             };
         }
     }

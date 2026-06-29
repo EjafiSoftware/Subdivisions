@@ -32,27 +32,35 @@ namespace Subdivisions.Systems
 
             for (var i = 0; i < controlPoints.Length; i++)
             {
-                var next = i + 1 < controlPoints.Length ? controlPoints[i + 1]._position : hover._position;
-                buffer.DrawLine(LineColor, new Line3.Segment(controlPoints[i]._position, next), LineWidth, false);
+                var next = i + 1 < controlPoints.Length ? controlPoints[i + 1].Position : hover.Position;
+                buffer.DrawLine(LineColor, new Line3.Segment(controlPoints[i].Position, next), LineWidth, false);
             }
 
             for (var i = 0; i < controlPoints.Length; i++)
             {
                 if (i == 0 && controlPoints.Length >= 3)
                 {
-                    buffer.DrawCircle(canClose ? CloseColor : PointColor, controlPoints[0]._position, StartDiameter);
+                    buffer.DrawCircle(canClose ? CloseColor : PointColor, controlPoints[0].Position, StartDiameter);
                 }
                 else
                 {
-                    buffer.DrawCircle(PointColor, controlPoints[i]._position, PointDiameter);
+                    buffer.DrawCircle(PointColor, controlPoints[i].Position, PointDiameter);
                 }
             }
 
             if (!canClose)
             {
-                var cursor = hover.OnNet ? SnapColor : (hover._onArea ? AreaColor : PointColor);
-                buffer.DrawCircle(cursor, hover._position, PointDiameter);
+                buffer.DrawCircle(CursorColor(hover), hover.Position, PointDiameter);
             }
+        }
+
+        private static Color CursorColor(SnapPoint hover)
+        {
+            if (hover.OnNet)
+            {
+                return SnapColor;
+            }
+            return hover.OnArea ? AreaColor : PointColor;
         }
     }
 }

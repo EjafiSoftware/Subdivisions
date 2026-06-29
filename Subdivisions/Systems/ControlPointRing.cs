@@ -38,7 +38,7 @@ namespace Subdivisions.Systems
         public bool IsNearStart(float3 position, float radius)
         {
             return _points.Length > 0
-                && math.distance(position.xz, _points[0]._position.xz) < radius;
+                && math.distance(position.xz, _points[0].Position.xz) < radius;
         }
 
         public bool CanClose(float3 position, float radius)

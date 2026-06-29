@@ -70,12 +70,22 @@ namespace Subdivisions.Tests
         }
     }
 
-    /// <summary>Free (non-snapped) control points for tests.</summary>
+    /// <summary>Snapped and free control points for tests.</summary>
     internal static class Pt
     {
         public static SnapPoint Free(float x, float z)
         {
-            return new SnapPoint { _position = new float3(x, 0f, z), _edge = Entity.Null, _t = 0f };
+            return new SnapPoint { Position = new float3(x, 0f, z), Edge = Entity.Null, CurveParameter = 0f };
+        }
+
+        public static SnapPoint Net(float x, float z, int edge = 1, float t = 0f)
+        {
+            return new SnapPoint { Position = new float3(x, 0f, z), Edge = new Entity { Index = edge, Version = 1 }, CurveParameter = t };
+        }
+
+        public static SnapPoint Area(float x, float z)
+        {
+            return new SnapPoint { Position = new float3(x, 0f, z), Edge = Entity.Null, CurveParameter = 0f, OnArea = true };
         }
     }
 }

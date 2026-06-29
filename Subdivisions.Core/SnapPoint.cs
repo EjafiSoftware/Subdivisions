@@ -5,13 +5,13 @@ namespace Subdivisions.Core
 {
     public struct SnapPoint
     {
-        public float3 _position;
-        public Entity _edge;
-        public float _t;
+        public float3 Position;
+        public Entity Edge;
+        public float CurveParameter;
 
         /// <summary>Snapped onto an existing district boundary or map-tile border (a free point, but not arbitrary terrain).</summary>
-        public bool _onArea;
+        public bool OnArea;
 
-        public bool OnNet => _edge != Entity.Null;
+        public bool OnNet => Edge != Entity.Null;
     }
 }

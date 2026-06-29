@@ -1,5 +1,4 @@
 using Colossal.Mathematics;
-using Game.Net;
 using Subdivisions.Core;
 using Unity.Collections;
 using Unity.Entities;
@@ -11,7 +10,7 @@ namespace Subdivisions.Systems
     /// Snap candidates from boundary-qualified network edges: edge endpoints (vertices) and the
     /// nearest point on each edge curve. Collected once per cursor query, then released.
     /// </summary>
-    internal sealed class NetSnapSource
+    internal sealed class NetSnapSource : ISnapSource
     {
         private readonly RoadNetwork _roads;
         private NativeList<Entity> _edges;
@@ -45,7 +44,7 @@ namespace Subdivisions.Systems
                     var t = end == 0 ? 0f : 1f;
                     var position = MathUtils.Position(bezier, t);
                     accumulator.Consider(
-                        new SnapPoint { _position = position, _edge = edge, _t = t },
+                        new SnapPoint { Position = position, Edge = edge, CurveParameter = t },
                         math.distance(position.xz, hit.xz));
                 }
             }
@@ -60,7 +59,7 @@ namespace Subdivisions.Systems
                 var t = NetSnap.FindNearestT(bezier, hit.xz);
                 var position = MathUtils.Position(bezier, t);
                 accumulator.Consider(
-                    new SnapPoint { _position = position, _edge = edge, _t = t },
+                    new SnapPoint { Position = position, Edge = edge, CurveParameter = t },
                     math.distance(position.xz, hit.xz));
             }
         }

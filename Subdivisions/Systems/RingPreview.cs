@@ -110,8 +110,8 @@ namespace Subdivisions.Systems
             {
                 return false;
             }
-            return hover._edge != _lastBuiltHover._edge
-                || math.distance(hover._position.xz, _lastBuiltHover._position.xz) > HoverRebuildEpsilon;
+            return hover.Edge != _lastBuiltHover.Edge
+                || math.distance(hover.Position.xz, _lastBuiltHover.Position.xz) > HoverRebuildEpsilon;
         }
     }
 }

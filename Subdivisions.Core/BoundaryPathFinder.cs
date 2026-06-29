@@ -35,19 +35,19 @@ namespace Subdivisions.Core
             List<Entity> nodePath,
             List<Entity> edgePath)
         {
-            var ea = graph.GetEndpoints(a._edge);
-            var eb = graph.GetEndpoints(b._edge);
-            var ca = graph.GetCurve(a._edge);
-            var cb = graph.GetCurve(b._edge);
+            var ea = graph.GetEndpoints(a.Edge);
+            var eb = graph.GetEndpoints(b.Edge);
+            var ca = graph.GetCurve(a.Edge);
+            var cb = graph.GetCurve(b.Edge);
 
             _dist.Clear();
             _link.Clear();
             _settled.Clear();
             _open.Clear();
 
-            var goal = b._position.xz;
-            Seed(ea.Start, NetSnap.MeasureSubCurve(ca, a._t, 0f), MathUtils.Position(ca, 0f).xz, goal);
-            Seed(ea.End, NetSnap.MeasureSubCurve(ca, a._t, 1f), MathUtils.Position(ca, 1f).xz, goal);
+            var goal = b.Position.xz;
+            Seed(ea.Start, NetSnap.MeasureSubCurve(ca, a.CurveParameter, 0f), MathUtils.Position(ca, 0f).xz, goal);
+            Seed(ea.End, NetSnap.MeasureSubCurve(ca, a.CurveParameter, 1f), MathUtils.Position(ca, 1f).xz, goal);
 
             var targetsRemaining = eb.Start == eb.End ? 1 : 2;
 
@@ -114,7 +114,7 @@ namespace Subdivisions.Core
             var tgt = Entity.Null;
             if (_dist.TryGetValue(eb.Start, out var db0))
             {
-                var total = db0 + NetSnap.MeasureSubCurve(cb, 0f, b._t);
+                var total = db0 + NetSnap.MeasureSubCurve(cb, 0f, b.CurveParameter);
                 if (total < best)
                 {
                     best = total;
@@ -123,7 +123,7 @@ namespace Subdivisions.Core
             }
             if (_dist.TryGetValue(eb.End, out var db1))
             {
-                var total = db1 + NetSnap.MeasureSubCurve(cb, 1f, b._t);
+                var total = db1 + NetSnap.MeasureSubCurve(cb, 1f, b.CurveParameter);
                 if (total < best)
                 {
                     tgt = eb.End;

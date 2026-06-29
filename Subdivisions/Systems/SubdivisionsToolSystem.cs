@@ -3,8 +3,8 @@ using Game.Net;
 using Game.Prefabs;
 using Game.Rendering;
 using Game.Tools;
-using Unity.Entities;
 using Unity.Jobs;
+using Subdivisions.Core;
 
 namespace Subdivisions.Systems
 {
@@ -133,9 +133,10 @@ namespace Subdivisions.Systems
             _roads.Refresh(this);
             _areas.Refresh(this);
             _graph.Refresh();
-            var hover = _snapper.Snap(hit);
+            var previous = _points.Count > 0 ? _points[^1] : (SnapPoint?)null;
+            var hover = _snapper.Snap(hit, previous);
 
-            var canClose = _points.CanClose(hover._position, CloseRadius);
+            var canClose = _points.CanClose(hover.Position, CloseRadius);
             _renderer.Draw(_points.Points, hover, canClose);
 
             applyMode = ApplyMode.Clear;

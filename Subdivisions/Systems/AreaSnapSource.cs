@@ -10,7 +10,7 @@ namespace Subdivisions.Systems
     /// Snap candidates from existing area borders (districts, map tiles): ring vertices and the
     /// nearest point on each ring segment. Collected once per cursor query, then released.
     /// </summary>
-    internal sealed class AreaSnapSource
+    internal sealed class AreaSnapSource : ISnapSource
     {
         private readonly AreaIndex _areas;
         private NativeList<Entity> _collected;
@@ -42,7 +42,7 @@ namespace Subdivisions.Systems
                 {
                     var position = ring[n].m_Position;
                     accumulator.Consider(
-                        new SnapPoint { _position = position, _edge = Entity.Null, _t = 0f, _onArea = true },
+                        new SnapPoint { Position = position, Edge = Entity.Null, CurveParameter = 0f, OnArea = true },
                         math.distance(position.xz, hit.xz));
                 }
             }
@@ -60,7 +60,7 @@ namespace Subdivisions.Systems
                     var distance = MathUtils.Distance(new Line2.Segment(a.xz, b.xz), hit.xz, out var t);
                     var position = math.lerp(a, b, t);
                     accumulator.Consider(
-                        new SnapPoint { _position = position, _edge = Entity.Null, _t = 0f, _onArea = true },
+                        new SnapPoint { Position = position, Edge = Entity.Null, CurveParameter = 0f, OnArea = true },
                         distance);
                 }
             }
