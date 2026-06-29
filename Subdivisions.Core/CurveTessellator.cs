@@ -11,7 +11,7 @@ namespace Subdivisions.Core
     /// </summary>
     internal static class CurveTessellator
     {
-        private const float DeviationTol = 1.0f;
+        private const float DeviationTol = 2.0f;
         private const int MaxDepth = 7;
 
         public static void EmitRange(Bezier4x3 bez, float t0, float t1, List<float2> ring)

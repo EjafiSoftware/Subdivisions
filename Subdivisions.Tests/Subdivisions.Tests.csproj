@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <!-- Private=true copies these and their transitive Unity closure to the test output so
-       standard probing resolves them (see PRD spike); the game is never launched. -->
+       standard probing resolves them; the game is never launched. -->
   <ItemGroup>
     <Reference Include="Unity.Mathematics">
       <HintPath>$(ManagedPath)\Unity.Mathematics.dll</HintPath>
