@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using AutoBogus;
+using AwesomeAssertions;
 using NUnit.Framework;
 using Subdivisions.Core;
+using Unity.Entities;
 using Unity.Mathematics;
 
 namespace Subdivisions.Tests
@@ -8,6 +11,8 @@ namespace Subdivisions.Tests
     [TestFixture]
     public class BorderTracerTests
     {
+        private static ArrayBoundaryGraph EmptyGraph() => new BoundaryGraphBuilder().Build();
+
         private static float RingArea(IReadOnlyList<float3> ring)
         {
             var area = 0f;
@@ -32,49 +37,55 @@ namespace Subdivisions.Tests
         }
 
         [Test]
-        public void Fewer_than_three_points_is_invalid()
+        public void Trace_FewerThanThreePoints_IsInvalid()
         {
-            var graph = new BoundaryGraphBuilder().Build();
             var points = new List<SnapPoint> { Pt.Free(0, 0), Pt.Free(10, 0) };
 
-            var result = new BorderTracer().Trace(points, graph);
+            var result = new BorderTracer().Trace(points, EmptyGraph());
 
-            Assert.That(result.IsValid, Is.False);
-            Assert.That(result.Ring.Count, Is.EqualTo(0));
+            result.IsValid.Should().BeFalse();
+            result.Ring.Should().BeEmpty();
         }
 
         [Test]
-        public void Free_points_square_is_valid_with_expected_area()
+        public void Trace_FreePointSquare_IsValidWithAreaMatchingItsSize()
         {
-            var graph = new BoundaryGraphBuilder().Build();
+            var spec = new AutoFaker<SquareSpec>()
+                .RuleFor(s => s.OriginX, f => f.Random.Float(-200f, 200f))
+                .RuleFor(s => s.OriginZ, f => f.Random.Float(-200f, 200f))
+                .RuleFor(s => s.Size, f => f.Random.Float(10f, 80f))
+                .Generate();
+
             var points = new List<SnapPoint>
             {
-                Pt.Free(0, 0), Pt.Free(10, 0), Pt.Free(10, 10), Pt.Free(0, 10),
+                Pt.Free(spec.OriginX, spec.OriginZ),
+                Pt.Free(spec.OriginX + spec.Size, spec.OriginZ),
+                Pt.Free(spec.OriginX + spec.Size, spec.OriginZ + spec.Size),
+                Pt.Free(spec.OriginX, spec.OriginZ + spec.Size),
             };
 
-            var result = new BorderTracer().Trace(points, graph);
+            var result = new BorderTracer().Trace(points, EmptyGraph());
 
-            Assert.That(result.IsValid, Is.True);
-            Assert.That(RingArea(result.Ring), Is.EqualTo(100f).Within(1f));
+            result.IsValid.Should().BeTrue();
+            RingArea(result.Ring).Should().BeApproximately(spec.Size * spec.Size, 1f);
         }
 
         [Test]
-        public void Bowtie_free_points_is_invalid()
+        public void Trace_BowtieFreePoints_IsInvalid()
         {
-            var graph = new BoundaryGraphBuilder().Build();
             // Order makes the two diagonals of the square cross: self-intersecting.
             var points = new List<SnapPoint>
             {
                 Pt.Free(0, 0), Pt.Free(10, 10), Pt.Free(10, 0), Pt.Free(0, 10),
             };
 
-            var result = new BorderTracer().Trace(points, graph);
+            var result = new BorderTracer().Trace(points, EmptyGraph());
 
-            Assert.That(result.IsValid, Is.False);
+            result.IsValid.Should().BeFalse();
         }
 
         [Test]
-        public void Road_loop_three_points_traces_valid_enclosing_ring()
+        public void Trace_RoadLoopThreePoints_ProducesValidEnclosingRing()
         {
             var b = new BoundaryGraphBuilder();
             b.Node(0, 0, 0).Node(1, 20, 0).Node(2, 20, 20).Node(3, 0, 20);
@@ -91,12 +102,12 @@ namespace Subdivisions.Tests
 
             var result = new BorderTracer().Trace(points, graph);
 
-            Assert.That(result.IsValid, Is.True);
-            Assert.That(RingArea(result.Ring), Is.GreaterThan(100f), "ring should enclose a real block, not a sliver");
+            result.IsValid.Should().BeTrue();
+            RingArea(result.Ring).Should().BeGreaterThan(100f, "ring should enclose a real block, not a sliver");
         }
 
         [Test]
-        public void Same_kind_neighbors_trace_the_corner()
+        public void Trace_SameKindNeighbors_TracesTheCorner()
         {
             var graph = LShape(NetworkKind.Road, NetworkKind.Road, out var e0, out var e1);
             var points = new List<SnapPoint>
@@ -106,12 +117,12 @@ namespace Subdivisions.Tests
 
             var result = new BorderTracer().Trace(points, graph);
 
-            Assert.That(result.IsValid, Is.True);
-            Assert.That(RingContains(result.Ring, 10, 0, 1f), Is.True, "same-kind segment should trace through the shared corner");
+            result.IsValid.Should().BeTrue();
+            RingContains(result.Ring, 10, 0, 1f).Should().BeTrue("same-kind segment should trace through the shared corner");
         }
 
         [Test]
-        public void Different_kind_neighbors_connect_straight_skipping_the_corner()
+        public void Trace_DifferentKindNeighbors_ConnectsStraightSkippingCorner()
         {
             var graph = LShape(NetworkKind.Road, NetworkKind.Track, out var e0, out var e1);
             var points = new List<SnapPoint>
@@ -121,12 +132,12 @@ namespace Subdivisions.Tests
 
             var result = new BorderTracer().Trace(points, graph);
 
-            Assert.That(result.IsValid, Is.True);
-            Assert.That(RingContains(result.Ring, 10, 0, 1f), Is.False, "cross-kind segment should cut straight, not trace the corner");
+            result.IsValid.Should().BeTrue();
+            RingContains(result.Ring, 10, 0, 1f).Should().BeFalse("cross-kind segment should cut straight, not trace the corner");
         }
 
         [Test]
-        public void Curved_edge_is_tessellated()
+        public void Trace_CurvedEdge_IsTessellated()
         {
             var b = new BoundaryGraphBuilder();
             b.Node(0, 0, 0).Node(1, 20, 0);
@@ -142,17 +153,24 @@ namespace Subdivisions.Tests
 
             var result = new BorderTracer().Trace(points, graph);
 
-            Assert.That(result.IsValid, Is.True);
-            Assert.That(result.Ring.Count, Is.GreaterThan(5), "the bent edge should subdivide into several vertices");
+            result.IsValid.Should().BeTrue();
+            result.Ring.Count.Should().BeGreaterThan(5, "the bent edge should subdivide into several vertices");
         }
 
-        private static ArrayBoundaryGraph LShape(NetworkKind first, NetworkKind second, out Unity.Entities.Entity e0, out Unity.Entities.Entity e1)
+        private static ArrayBoundaryGraph LShape(NetworkKind first, NetworkKind second, out Entity e0, out Entity e1)
         {
             var b = new BoundaryGraphBuilder();
             b.Node(0, 0, 0).Node(1, 10, 0).Node(2, 10, 10);
             e0 = b.Edge(0, 1, first);
             e1 = b.Edge(1, 2, second);
             return b.Build();
+        }
+
+        public class SquareSpec
+        {
+            public float OriginX { get; set; }
+            public float OriginZ { get; set; }
+            public float Size { get; set; }
         }
     }
 }

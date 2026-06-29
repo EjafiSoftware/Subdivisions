@@ -45,13 +45,13 @@ namespace Subdivisions.Core
         }
 
         /// <summary>Approximate length of the whole curve (xz), by uniform sampling.</summary>
-        public static float MeasureCurve(Bezier4x3 bez)
+        internal static float MeasureCurve(Bezier4x3 bez)
         {
             return MeasureSubCurve(bez, 0f, 1f);
         }
 
         /// <summary>Approximate length of the curve between two parameters (xz), by uniform sampling.</summary>
-        public static float MeasureSubCurve(Bezier4x3 bez, float t0, float t1)
+        internal static float MeasureSubCurve(Bezier4x3 bez, float t0, float t1)
         {
             const int samples = 8;
             var length = 0f;

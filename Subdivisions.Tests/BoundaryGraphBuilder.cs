@@ -21,7 +21,8 @@ namespace Subdivisions.Tests
         private readonly Dictionary<Entity, List<Entity>> _neighbors = new();
         private int _edgeCounter;
 
-        public static Entity NodeEntity(int id) => new Entity { Index = id + 1, Version = 1 };
+        public static Entity NodeEntity(int id) => new()
+            { Index = id + 1, Version = 1 };
 
         public BoundaryGraphBuilder Node(int id, float x, float z)
         {

@@ -4,12 +4,12 @@ namespace Subdivisions.Core
 {
     public static class Geometry
     {
-        public static float Cross(float2 a, float2 b)
+        private static float Cross(float2 a, float2 b)
         {
             return a.x * b.y - a.y * b.x;
         }
 
-        public static bool SegmentsCross(float2 a1, float2 a2, float2 b1, float2 b2)
+        internal static bool SegmentsCross(float2 a1, float2 a2, float2 b1, float2 b2)
         {
             var d1 = Cross(b2 - b1, a1 - b1);
             var d2 = Cross(b2 - b1, a2 - b1);
@@ -18,7 +18,7 @@ namespace Subdivisions.Core
             return ((d1 > 0f) != (d2 > 0f)) && ((d3 > 0f) != (d4 > 0f));
         }
 
-        public static float MeasurePerpendicularDistance(float2 p, float2 a, float2 b)
+        internal static float MeasurePerpendicularDistance(float2 p, float2 a, float2 b)
         {
             var ab = b - a;
             var len = math.length(ab);

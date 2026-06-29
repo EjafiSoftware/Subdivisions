@@ -205,6 +205,15 @@ Reference mods (use them as exemplars for mod structure, ECS/tool patterns, and 
 ## Conventions
 
 - Localization strings live in `BasicLocale.cs` (an `IDictionarySource`).
+- Tests (`Subdivisions.Tests`, NUnit) follow the **Detroit / classicist** style: exercise the
+  real `BorderTracer` through real collaborators and the in-memory `ArrayBoundaryGraph` fake (built
+  via `BoundaryGraphBuilder`) - no mocking frameworks. Assert on resulting **state**, never on
+  interactions/calls (the only exception would be verifying the parameters we pass to an external,
+  unmanaged source - none here). Use **AwesomeAssertions** (`value.Should()...`) and **AutoBogus**
+  `AutoFaker` to cut setup boilerplate / de-magic fixture data. Don't write a test solely to
+  exercise a library; every test must confirm a behavior. Name tests `Method_Scenario_Expected`
+  (e.g. `Trace_BowtieFreePoints_IsInvalid`). AutoBogus is the net48-compatible `AutoFaker`; the
+  maintained `Soenneker.Utils.AutoBogus` is modern-.NET only.
 - The **mod** uses Unity DOTS/ECS heavily: `NativeList`/`NativeArray` with explicit `Allocator`
   and disposal, `ComponentLookup`/`BufferLookup` refreshed each frame. Mind allocator lifetimes.
   **`Subdivisions.Core`** is the opposite — pure managed (`List`/`Dictionary`/`HashSet`), no

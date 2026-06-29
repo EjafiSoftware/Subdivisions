@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Colossal.Mathematics;
 using Unity.Mathematics;
 
 namespace Subdivisions.Core
@@ -173,7 +174,7 @@ namespace Subdivisions.Core
             }
         }
 
-        public static void CopyInto(List<float2> src, List<float2> dst)
+        private static void CopyInto(List<float2> src, List<float2> dst)
         {
             for (var i = 0; i < src.Count; i++)
             {
