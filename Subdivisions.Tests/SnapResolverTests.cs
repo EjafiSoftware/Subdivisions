@@ -30,7 +30,7 @@ namespace Subdivisions.Tests
         [Test]
         public void Resolve_SingleEdgeCandidateWithinRange_SnapsToIt()
         {
-            var sources = new ISnapSource[] { new FakeSnapSource().Edge(Pt.Net(5f, 5f)) };
+            var sources = new ISnapSource[] { new FakeSnapSource().Edge(SnapPoints.Net(5f, 5f)) };
 
             var result = SnapResolver.Resolve(sources, Query(8f, 5f));
 
@@ -41,7 +41,7 @@ namespace Subdivisions.Tests
         [Test]
         public void Resolve_CandidateBeyondSnapDistance_ReturnsFreeHit()
         {
-            var sources = new ISnapSource[] { new FakeSnapSource().Edge(Pt.Net(100f, 100f)) };
+            var sources = new ISnapSource[] { new FakeSnapSource().Edge(SnapPoints.Net(100f, 100f)) };
 
             var result = SnapResolver.Resolve(sources, Query(0f, 0f));
 
@@ -54,10 +54,10 @@ namespace Subdivisions.Tests
         {
             var sources = new ISnapSource[]
             {
-                new FakeSnapSource().Vertex(Pt.Net(0f, 0f)).Vertex(Pt.Area(0.2f, 0f))
+                new FakeSnapSource().Vertex(SnapPoints.Net(0f, 0f)).Vertex(SnapPoints.Area(0.2f, 0f))
             };
 
-            var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: Pt.Area(50f, 50f)));
+            var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: SnapPoints.Area(50f, 50f)));
 
             result.OnArea.Should().BeTrue();
             result.OnNet.Should().BeFalse();
@@ -68,10 +68,10 @@ namespace Subdivisions.Tests
         {
             var sources = new ISnapSource[]
             {
-                new FakeSnapSource().Vertex(Pt.Area(0f, 0f)).Vertex(Pt.Net(0.2f, 0f))
+                new FakeSnapSource().Vertex(SnapPoints.Area(0f, 0f)).Vertex(SnapPoints.Net(0.2f, 0f))
             };
 
-            var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: Pt.Net(50f, 50f)));
+            var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: SnapPoints.Net(50f, 50f)));
 
             result.OnNet.Should().BeTrue();
         }
@@ -81,10 +81,10 @@ namespace Subdivisions.Tests
         {
             var sources = new ISnapSource[]
             {
-                new FakeSnapSource().Vertex(Pt.Net(0f, 0f)).Vertex(Pt.Area(5f, 0f))
+                new FakeSnapSource().Vertex(SnapPoints.Net(0f, 0f)).Vertex(SnapPoints.Area(5f, 0f))
             };
 
-            var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: Pt.Area(50f, 50f)));
+            var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: SnapPoints.Area(50f, 50f)));
 
             result.OnNet.Should().BeTrue();
         }
@@ -94,7 +94,7 @@ namespace Subdivisions.Tests
         {
             var sources = new ISnapSource[]
             {
-                new FakeSnapSource().Vertex(Pt.Area(0f, 0f)).Vertex(Pt.Net(0.2f, 0f))
+                new FakeSnapSource().Vertex(SnapPoints.Area(0f, 0f)).Vertex(SnapPoints.Net(0.2f, 0f))
             };
 
             var result = SnapResolver.Resolve(sources, Query(0f, 0f, previous: null));
@@ -107,7 +107,7 @@ namespace Subdivisions.Tests
         {
             var sources = new ISnapSource[]
             {
-                new FakeSnapSource().Vertex(Pt.Net(10f, 0f)).Edge(Pt.Net(3f, 0f))
+                new FakeSnapSource().Vertex(SnapPoints.Net(10f, 0f)).Edge(SnapPoints.Net(3f, 0f))
             };
 
             var result = SnapResolver.Resolve(sources, Query(0f, 0f));
@@ -118,9 +118,9 @@ namespace Subdivisions.Tests
         [Test]
         public void Resolve_CoincidentTie_IsIndependentOfSourceOrder()
         {
-            var net = new FakeSnapSource().Vertex(Pt.Net(0.2f, 0f));
-            var area = new FakeSnapSource().Vertex(Pt.Area(0f, 0f));
-            var query = Query(0f, 0f, previous: Pt.Area(50f, 50f));
+            var net = new FakeSnapSource().Vertex(SnapPoints.Net(0.2f, 0f));
+            var area = new FakeSnapSource().Vertex(SnapPoints.Area(0f, 0f));
+            var query = Query(0f, 0f, previous: SnapPoints.Area(50f, 50f));
 
             var netFirst = SnapResolver.Resolve(new ISnapSource[] { net, area }, query);
             var areaFirst = SnapResolver.Resolve(new ISnapSource[] { area, net }, query);

@@ -3,6 +3,7 @@ using AutoBogus;
 using AwesomeAssertions;
 using NUnit.Framework;
 using Subdivisions.Core;
+using Subdivisions.Tests.Fakes;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -39,7 +40,7 @@ namespace Subdivisions.Tests
         [Test]
         public void Trace_FewerThanThreePoints_IsInvalid()
         {
-            var points = new List<SnapPoint> { Pt.Free(0, 0), Pt.Free(10, 0) };
+            var points = new List<SnapPoint> { SnapPoints.Free(0, 0), SnapPoints.Free(10, 0) };
 
             var result = new BorderTracer().Trace(points, EmptyGraph());
 
@@ -58,10 +59,10 @@ namespace Subdivisions.Tests
 
             var points = new List<SnapPoint>
             {
-                Pt.Free(spec.OriginX, spec.OriginZ),
-                Pt.Free(spec.OriginX + spec.Size, spec.OriginZ),
-                Pt.Free(spec.OriginX + spec.Size, spec.OriginZ + spec.Size),
-                Pt.Free(spec.OriginX, spec.OriginZ + spec.Size),
+                SnapPoints.Free(spec.OriginX, spec.OriginZ),
+                SnapPoints.Free(spec.OriginX + spec.Size, spec.OriginZ),
+                SnapPoints.Free(spec.OriginX + spec.Size, spec.OriginZ + spec.Size),
+                SnapPoints.Free(spec.OriginX, spec.OriginZ + spec.Size),
             };
 
             var result = new BorderTracer().Trace(points, EmptyGraph());
@@ -76,7 +77,7 @@ namespace Subdivisions.Tests
             // Order makes the two diagonals of the square cross: self-intersecting.
             var points = new List<SnapPoint>
             {
-                Pt.Free(0, 0), Pt.Free(10, 10), Pt.Free(10, 0), Pt.Free(0, 10),
+                SnapPoints.Free(0, 0), SnapPoints.Free(10, 10), SnapPoints.Free(10, 0), SnapPoints.Free(0, 10),
             };
 
             var result = new BorderTracer().Trace(points, EmptyGraph());
@@ -112,7 +113,7 @@ namespace Subdivisions.Tests
             var graph = LShape(NetworkKind.Road, NetworkKind.Road, out var e0, out var e1);
             var points = new List<SnapPoint>
             {
-                graph.PointOn(e0, 0.5f), graph.PointOn(e1, 0.5f), Pt.Free(0, 10),
+                graph.PointOn(e0, 0.5f), graph.PointOn(e1, 0.5f), SnapPoints.Free(0, 10),
             };
 
             var result = new BorderTracer().Trace(points, graph);
@@ -127,7 +128,7 @@ namespace Subdivisions.Tests
             var graph = LShape(NetworkKind.Road, NetworkKind.Track, out var e0, out var e1);
             var points = new List<SnapPoint>
             {
-                graph.PointOn(e0, 0.5f), graph.PointOn(e1, 0.5f), Pt.Free(0, 10),
+                graph.PointOn(e0, 0.5f), graph.PointOn(e1, 0.5f), SnapPoints.Free(0, 10),
             };
 
             var result = new BorderTracer().Trace(points, graph);
@@ -148,7 +149,7 @@ namespace Subdivisions.Tests
 
             var points = new List<SnapPoint>
             {
-                graph.PointOn(e, 0.1f), graph.PointOn(e, 0.9f), Pt.Free(10, -10),
+                graph.PointOn(e, 0.1f), graph.PointOn(e, 0.9f), SnapPoints.Free(10, -10),
             };
 
             var result = new BorderTracer().Trace(points, graph);
