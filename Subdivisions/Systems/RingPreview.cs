@@ -1,37 +1,31 @@
-using System;
-using Game.Prefabs;
-using Subdivisions.Systems.SubdivisionsToolJobs;
-using Unity.Collections;
-using Unity.Jobs;
+using System.Collections.Generic;
+using Subdivisions.Core;
+using Subdivisions.Domain;
+using Unity.Entities;
 using Unity.Mathematics;
 
 namespace Subdivisions.Systems
 {
     /// <summary>
-    /// Caches the traced border ring and drives its rebuild lifecycle.
+    /// Caches the traced border ring and drives its rebuild lifecycle. Traces synchronously on
+    /// the main thread (only when the points or snapped hover actually change) and re-emits the
+    /// cached ring as a creation definition every frame for the live preview.
     /// </summary>
-    internal sealed class RingPreview : IDisposable
+    internal sealed class RingPreview
     {
         private const float HoverRebuildEpsilon = 0.5f;
 
-        private readonly DistrictBuilder _builder;
-
-        private NativeList<float3> _ring;
-        private NativeReference<bool> _ringValid;
+        private readonly BorderTracer _tracer = new();
+        private readonly List<SnapPoint> _input = new();
+        private readonly List<float3> _ring = new();
 
         private SnapPoint _lastBuiltHover;
         private bool _lastIncludeHover;
         private bool _hasBuild;
         private bool _pointsDirty;
+        private bool _valid;
 
-        public RingPreview(DistrictBuilder builder)
-        {
-            _builder = builder;
-            _ring = new NativeList<float3>(Allocator.Persistent);
-            _ringValid = new NativeReference<bool>(Allocator.Persistent);
-        }
-
-        public bool IsValid => _ringValid.Value;
+        public bool IsValid => _valid;
 
         public void MarkPointsDirty() => _pointsDirty = true;
 
@@ -39,44 +33,71 @@ namespace Subdivisions.Systems
         {
             _hasBuild = false;
             _pointsDirty = true;
+            _valid = false;
+            _ring.Clear();
         }
 
-        public JobHandle Update(ControlPointRing points, SnapPoint hover, bool includeHover, DistrictPrefab prefab, JobHandle inputDeps)
+        public void Update(
+            ControlPointRing points,
+            SnapPoint hover,
+            bool includeHover,
+            IBoundaryGraph graph,
+            EntityCommandBuffer ecb,
+            Entity prefab)
         {
             if (points.Count + (includeHover ? 1 : 0) < 3)
             {
                 _hasBuild = false;
-                return inputDeps;
+                _valid = false;
+                return;
             }
 
-            var handle = inputDeps;
             if (NeedsRebuild(hover, includeHover))
             {
-                handle = ScheduleBuild(points, hover, includeHover, inputDeps);
+                Rebuild(points, hover, includeHover, graph);
                 _lastBuiltHover = hover;
                 _lastIncludeHover = includeHover;
                 _hasBuild = true;
                 _pointsDirty = false;
             }
 
-            return _builder.CreateDistrict(_ring, prefab, handle);
+            if (_valid)
+            {
+                Emit(ecb, prefab);
+            }
         }
 
-        private JobHandle ScheduleBuild(ControlPointRing points, SnapPoint hover, bool includeHover, JobHandle inputDeps)
+        private void Rebuild(ControlPointRing points, SnapPoint hover, bool includeHover, IBoundaryGraph graph)
         {
-            var list = new NativeList<SnapPoint>(Allocator.TempJob);
+            _input.Clear();
             for (var i = 0; i < points.Count; i++)
             {
-                list.Add(points[i]);
+                _input.Add(points[i]);
             }
             if (includeHover)
             {
-                list.Add(hover);
+                _input.Add(hover);
             }
 
-            var handle = _builder.BuildRing(list, _ring, _ringValid, inputDeps);
-            list.Dispose(handle);
-            return handle;
+            var result = _tracer.Trace(_input, graph);
+            _valid = result.IsValid;
+
+            // Copy out: TraceResult.Ring is a view valid only until the next Trace call.
+            _ring.Clear();
+            if (_valid)
+            {
+                for (var i = 0; i < result.Ring.Count; i++)
+                {
+                    _ring.Add(result.Ring[i]);
+                }
+            }
+        }
+
+        private void Emit(EntityCommandBuffer ecb, Entity prefab)
+        {
+            var entity = ecb.CreateEntity();
+            AreaDefinitionCreation.AsDynamicBufferNodes(ecb, entity, _ring);
+            AreaDefinitionCreation.WithCreationDefinition(ecb, entity, prefab);
         }
 
         private bool NeedsRebuild(SnapPoint hover, bool includeHover)
@@ -89,20 +110,8 @@ namespace Subdivisions.Systems
             {
                 return false;
             }
-            return hover._edge != _lastBuiltHover._edge
-                || math.distance(hover._position.xz, _lastBuiltHover._position.xz) > HoverRebuildEpsilon;
-        }
-
-        public void Dispose()
-        {
-            if (_ring.IsCreated)
-            {
-                _ring.Dispose();
-            }
-            if (_ringValid.IsCreated)
-            {
-                _ringValid.Dispose();
-            }
+            return hover.Edge != _lastBuiltHover.Edge
+                || math.distance(hover.Position.xz, _lastBuiltHover.Position.xz) > HoverRebuildEpsilon;
         }
     }
 }

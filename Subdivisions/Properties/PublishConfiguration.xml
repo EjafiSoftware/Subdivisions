@@ -29,7 +29,7 @@ The boundary follows your networks along the shortest route between points, incl
 	<Screenshot Value="Properties/screen1.jpg" />
 	<Tag Value="Code Mod" />
 	<ForumLink Value="" />
-	<ModVersion Value="1.0.1" />
+	<ModVersion Value="1.1.0" />
 	<GameVersion Value="1.6.*" />
 	<ExternalLink Type="github" Url="https://github.com/EjafiSoftware/Subdivisions" />
 	<ChangeLog>

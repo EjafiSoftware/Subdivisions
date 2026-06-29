@@ -1,22 +1,9 @@
 using Colossal.Mathematics;
-using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Subdivisions.Systems.SubdivisionsToolJobs
+namespace Subdivisions.Core
 {
-    internal struct SnapPoint
-    {
-        public float3 _position;
-        public Entity _edge;
-        public float _t;
-
-        /// <summary>Snapped onto an existing district boundary or map-tile border (a free point, but not arbitrary terrain).</summary>
-        public bool _onArea;
-
-        public bool OnNet => _edge != Entity.Null;
-    }
-
-    internal static class NetSnap
+    public static class NetSnap
     {
         /// <summary>Curve parameter of the point on <paramref name="bez"/> nearest <paramref name="p"/> (xz plane).</summary>
         public static float FindNearestT(Bezier4x3 bez, float2 p)
@@ -58,13 +45,13 @@ namespace Subdivisions.Systems.SubdivisionsToolJobs
         }
 
         /// <summary>Approximate length of the whole curve (xz), by uniform sampling.</summary>
-        public static float MeasureCurve(Bezier4x3 bez)
+        internal static float MeasureCurve(Bezier4x3 bez)
         {
             return MeasureSubCurve(bez, 0f, 1f);
         }
 
         /// <summary>Approximate length of the curve between two parameters (xz), by uniform sampling.</summary>
-        public static float MeasureSubCurve(Bezier4x3 bez, float t0, float t1)
+        internal static float MeasureSubCurve(Bezier4x3 bez, float t0, float t1)
         {
             const int samples = 8;
             var length = 0f;

@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <Configurations>Debug;Release</Configurations>
+        <Version>1.1.0</Version>
 
         <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
         <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -10,6 +11,10 @@
     <!--Imports must be after PropertyGroup block-->
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\Subdivisions.Core\Subdivisions.Core.csproj" />
+    </ItemGroup>
 
     <ItemGroup>
         <Reference Include="Game">

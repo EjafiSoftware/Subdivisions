@@ -1,7 +1,7 @@
-using Unity.Collections;
+using System.Collections.Generic;
 using Unity.Entities;
 
-namespace Subdivisions.Systems.SubdivisionsToolJobs
+namespace Subdivisions.Core
 {
     internal struct HeapItem
     {
@@ -10,22 +10,27 @@ namespace Subdivisions.Systems.SubdivisionsToolJobs
         public Entity _node;
     }
 
-    /// <summary>Binary min-heap keyed by priority, used for the boundary path-find frontier.</summary>
-    internal struct MinHeap
+    /// <summary>
+    /// Binary min-heap keyed by priority, used for the boundary path-find frontier.
+    /// Managed so it runs in a standalone test process; reuse via <see cref="Clear"/>.
+    /// </summary>
+    internal sealed class MinHeap
     {
-        private NativeList<HeapItem> _items;
+        private readonly List<HeapItem> _items;
 
-        public static MinHeap Allocate(int capacity, Allocator allocator)
+        public MinHeap(int capacity = 256)
         {
-            return new MinHeap { _items = new NativeList<HeapItem>(capacity, allocator) };
+            _items = new List<HeapItem>(capacity);
         }
 
-        public int Count => _items.Length;
+        public int Count => _items.Count;
+
+        public void Clear() => _items.Clear();
 
         public void Push(float priority, float cost, Entity node)
         {
             _items.Add(new HeapItem { _priority = priority, _cost = cost, _node = node });
-            var i = _items.Length - 1;
+            var i = _items.Count - 1;
             while (i > 0)
             {
                 var parent = (i - 1) / 2;
@@ -41,11 +46,11 @@ namespace Subdivisions.Systems.SubdivisionsToolJobs
         public HeapItem Pop()
         {
             var root = _items[0];
-            var last = _items.Length - 1;
+            var last = _items.Count - 1;
             _items[0] = _items[last];
             _items.RemoveAt(last);
 
-            var n = _items.Length;
+            var n = _items.Count;
             var i = 0;
             while (true)
             {
@@ -68,11 +73,6 @@ namespace Subdivisions.Systems.SubdivisionsToolJobs
                 i = smallest;
             }
             return root;
-        }
-
-        public void Dispose()
-        {
-            _items.Dispose();
         }
     }
 }

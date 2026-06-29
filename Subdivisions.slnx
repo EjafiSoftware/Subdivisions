@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Subdivisions.Core/Subdivisions.Core.csproj" />
+  <Project Path="Subdivisions.Tests/Subdivisions.Tests.csproj" />
   <Project Path="Subdivisions/Subdivisions.csproj" />
 </Solution>
